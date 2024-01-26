@@ -18,32 +18,38 @@ let brushY;
 window.onload = () => {
     canvas = document.getElementById("canvas");
     
-    let ratio = window.innerHeight / window.innerWidth;
+    let ratio = Math.max(1, window.innerHeight / window.innerWidth);
     canvas.height = ratio * RESOLUTION;
     canvas.width = RESOLUTION;
 
     ctxt = canvas.getContext("2d");
 
     canvas.addEventListener("touchstart", (e) => {
-        let rect = e.target.getBoundingClientRect();
-        let x = Math.floor((e.targetTouches[0].clientX - rect.x) * RESOLUTION / rect.width);
-        let y = Math.floor((e.targetTouches[0].clientY - rect.y) * RESOLUTION / rect.width);
-        brushX = x;
-        brushY = y;
+        handleInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
     });
 
     canvas.addEventListener("touchmove", (e) => {
-        let rect = e.target.getBoundingClientRect();
-        let x = Math.floor((e.targetTouches[0].clientX - rect.x) * RESOLUTION / rect.width);
-        let y = Math.floor((e.targetTouches[0].clientY - rect.y) * RESOLUTION / rect.width);
-
-        brushX = x;
-        brushY = y;
+        handleInput(e.targetTouches[0].clientX, e.targetTouches[0].clientY);
     });
 
     canvas.addEventListener("touchend", (e) => {
-        brushX = undefined;
-        brushY = undefined;
+        handleInputStop();
+    });
+
+    canvas.addEventListener("mousedown", (e) => {
+        handleInput(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+        if(brushX === undefined || brushY === undefined) {
+            return;
+        }
+        
+        handleInput(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener("mouseup", (e) => {
+        handleInputStop();
     });
 
     pile = new SandPile();
@@ -52,8 +58,22 @@ window.onload = () => {
     loop();
 }
 
+function handleInput(pointerX, pointerY) {
+    let rect = canvas.getBoundingClientRect();
+    let x = Math.floor((pointerX - rect.x) * RESOLUTION / rect.width);
+    let y = Math.floor((pointerY - rect.y) * RESOLUTION / rect.width);
+
+    brushX = x;
+    brushY = y;
+}
+
+function handleInputStop() {
+    brushX = undefined;
+    brushY = undefined;
+}
+
 window.onresize = () => {
-    let ratio = window.innerHeight / window.innerWidth;
+    let ratio = Math.max(1, window.innerHeight / window.innerWidth);
     canvas.height = ratio * RESOLUTION;
 }
 
@@ -199,9 +219,6 @@ class SandPile {
                 this.updatePile[i+offset2] += movedDelta2;
             }
         }
-
-        //this.updatePile[0] += this.pile[0];
-        //this.updatePile[this.pile.length-1] += this.pile[this.pile.length-1];
 
         let swap = this.pile;
         this.pile = this.updatePile;

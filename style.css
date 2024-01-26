@@ -16,6 +16,6 @@ body {
 
 canvas {
     width: min(100vw, 100vh);
-    height: max(100vw, 100vh);
+    height: 100vh;
     image-rendering: pixelated;
 }
